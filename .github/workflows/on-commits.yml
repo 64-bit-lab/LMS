@@ -1,0 +1,39 @@
+name: Workflow for feat, feature and fix named branches
+
+on:
+  push:
+    branches: [ feature/*, feat/*, fix/* ]
+
+jobs:
+  validators:
+    runs-on: ubuntu-latest
+    steps:
+    - name: Checkout source code
+      uses: actions/checkout@v2
+    
+    - name: Setup go environment
+      uses: actions/setup-go@v3.2.1
+      
+    - name: Verify dependencies
+      run: go mod verify
+      
+    - name: Build
+      run: go build -v ./...
+      
+    - name: Run go vet
+      run: go vet ./...
+    
+    - name: use static check
+      uses: dominikh/staticcheck-action@v1.2.0
+    
+    - name: run static check
+      run: staticcheck ./...
+
+    - name: Install golint
+      run: go install golang.org/x/lint/golint@latest
+    
+    - name: Run golint
+      run: golint ./...
+      
+    - name: Test
+      run: go test -race -v ./...
